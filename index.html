@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electrical Theory I — Study Guide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;padding:1.5rem}
+.container{max-width:760px;margin:0 auto}
+.header{padding:1.5rem 0 1rem;border-bottom:1px solid #e0e0e0;margin-bottom:1.5rem}
+.header h1{font-size:22px;font-weight:500}
+.header p{font-size:14px;color:#666;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:#ebebeb;border-radius:8px;padding:0.75rem 1rem}
+.stat-val{font-size:22px;font-weight:500}
+.stat-lbl{font-size:12px;color:#666;margin-top:2px}
+.filters{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{padding:6px 14px;font-size:13px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#666;cursor:pointer}
+.filter-btn.active{background:#e8e8e8;color:#1a1a1a;border-color:#999}
+.search-wrap{margin-bottom:1.5rem}
+.search-wrap input{width:100%;padding:8px 12px;font-size:14px;border:1px solid #ccc;border-radius:8px;background:#fff;color:#1a1a1a;outline:none}
+.search-wrap input:focus{border-color:#888}
+.q-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px}
+.q-card.wrong{border-left:3px solid #e24b4a}
+.q-header{display:flex;align-items:flex-start;gap:12px}
+.q-num{font-size:12px;font-weight:500;color:#888;min-width:28px;padding-top:2px}
+.q-text{font-size:14px;color:#1a1a1a;line-height:1.6;flex:1}
+.q-answer{margin-top:10px;padding-top:10px;border-top:1px solid #eee;display:flex;align-items:flex-start;gap:8px}
+.ans-label{font-size:12px;color:#888;min-width:60px;padding-top:2px}
+.ans-value{font-size:14px;font-weight:500;color:#1a1a1a;flex:1}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;margin-left:8px}
+.badge-wrong{background:#fcebeb;color:#a32d2d}
+.badge-note{background:#faeeda;color:#854f0b;margin-top:6px;display:inline-block;margin-left:0}
+.empty{text-align:center;padding:2rem;color:#888;font-size:14px}
+@media(max-width:500px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>Electrical Theory I</h1>
+  <p>DC 1st year test study guide — 60 questions</p>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val">60</div><div class="stat-lbl">Total questions</div></div>
+  <div class="stat"><div class="stat-val" id="showing-count">60</div><div class="stat-lbl">Showing</div></div>
+  <div class="stat"><div class="stat-val" style="color:#a32d2d">3</div><div class="stat-lbl">Key errors found</div></div>
+</div>
+
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="Search questions..." oninput="render()">
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" onclick="setFilter('calc',this)">Calculations</button>
+  <button class="filter-btn" onclick="setFilter('mc',this)">Multiple choice</button>
+  <button class="filter-btn" onclick="setFilter('wrong',this)">Key errors</button>
+</div>
+
+<div id="qlist"></div>
+
+</div>
+<script>
+const questions=[
+{n:1,type:'mc',text:'The pole and the terminal size relate to the ? rating of the switch, and the distance and speed of the opening action relate to the ? rating of the switch.',answer:'a. current / voltage',note:''},
+{n:2,type:'calc',text:'Determine the current flow through R1, given: R1=360Ω, R2=420Ω, R3=560Ω, P1=6.4W, P2=5.486W, P3=4.114W. (Parallel circuit)',answer:'133 mA',note:''},
+{n:3,type:'calc',text:'Determine the total power dissipated. Given: ET=500V, R1=30Ω, R2=10Ω, R3=40Ω, R4=20Ω. (Series circuit)',answer:'2,500 W',note:'RT=100Ω, P=E²/R=500²/100'},
+{n:4,type:'calc',text:'Determine the voltage dropped across R1. Given: R1=31Ω, R2=64Ω, R3=76Ω, R4=56Ω, ET=240V. (Combination)',answer:'33.67 V',note:''},
+{n:5,type:'calc',text:'What is 500 kV expressed in base units?',answer:'500,000 V',note:''},
+{n:6,type:'calc',text:'Determine the total current. Given: R1=10Ω, I2=12A, R3=8Ω, R4=16Ω, ET=120V. (Parallel)',answer:'46.5 A',note:''},
+{n:7,type:'calc',text:'Determine the total voltage. Given: IT=62.5mA, R1=88Ω, R2=112Ω, R3=156Ω, R4=220Ω. (Series)',answer:'36 V',note:'RT=576Ω, ET=0.0625×576'},
+{n:8,type:'calc',text:'If all resistors have a 3W rating, which component is operating above its maximum rating? Given: ET=24V, R1=16Ω, R2=13Ω, R3=11Ω, R4=10Ω. (Combination — R4 series, R1‖R2‖R3 parallel)',answer:'R4',note:'KEY ERROR — answer key says R1 but R4 dissipates ~28W',wrong:true},
+{n:9,type:'calc',text:'What is 400Ω expressed in kΩ?',answer:'0.4 kΩ',note:''},
+{n:10,type:'mc',text:'Which is the correct formula for total resistance in a series circuit?',answer:'a. RT = R1 + R2 + R3 + R4 ... RN',note:''},
+{n:11,type:'calc',text:'Determine the current flow through R3. Given: R1=420Ω, R2=380Ω, R3=780Ω, R4=300Ω, R5=180Ω, E5=3.6V. (Combination)',answer:'12.31 mA',note:'KEY ERROR — key says 1.25mA. E5 is voltage across R5, not total source. I(R4+R5)=3.6/180=20mA, V_parallel=9.6V, I_R3=9.6/780=12.31mA',wrong:true},
+{n:12,type:'calc',text:'What is the current flow in a circuit with 470Ω resistance and 12V applied?',answer:'25.5 mA',note:'I=12/470'},
+{n:13,type:'mc',text:'When current flows through a conductor, a ? is produced in a concentric circle around the conductor.',answer:'b. magnetic field',note:''},
+{n:14,type:'calc',text:'What is the applied voltage if current flow is 12A and resistance is 47Ω?',answer:'564 V',note:'V=IR=12×47'},
+{n:15,type:'mc',text:'The factors affecting the strength of an electromagnet are: I. AWG size, II. current, III. number of turns, IV. spacing between coils.',answer:'a. I, II, and III',note:'Spacing between coils does not affect strength'},
+{n:16,type:'mc',text:'This symbol (circle with A inside) represents a(n) ?',answer:'a. ammeter',note:''},
+{n:17,type:'mc',text:'If voltage is increased and current remains the same, resistance would have had to ?',answer:'b. increase',note:'V=IR — if V increases and I stays same, R must increase'},
+{n:18,type:'calc',text:'Find the current flow through R1. Given: R1=85Ω, R2=65Ω, R3=32Ω, R4=48Ω, E3=16V. (Combination)',answer:'0.36 A',note:'E3=16V across R3‖R4 group. Work backwards to find IT then I_R1'},
+{n:19,type:'calc',text:'Determine the total voltage. Given: R1=16Ω, R2=18Ω, R3=36Ω, R4=8Ω, IT=4A. (Combination)',answer:'144 V',note:'R2‖R3=12Ω, RT=16+12+8=36Ω, ET=4×36'},
+{n:20,type:'calc',text:'Determine the current through R3. Given: I1=16.4A, I2=12.8A, IT=43.5A, ET=240V. (Parallel)',answer:'14.3 A',note:'I_R3=43.5−16.4−12.8=14.3A'},
+{n:21,type:'mc',text:'If current is decreased in a circuit, the power consumed will ?',answer:'decrease',note:'P=I²R — if I decreases, P decreases'},
+{n:22,type:'calc',text:'Determine the current through R1. Given: R1=400Ω, R2=500Ω, R3=200Ω, R4=600Ω, R5=300Ω, ET=18V. (Ladder/combination)',answer:'17.86 mA',note:''},
+{n:23,type:'mc',text:'A(n) ? is used to measure current flow in a circuit.',answer:'a. ammeter',note:''},
+{n:24,type:'calc',text:'Determine the current through R5. Given: R1=6Ω, R2=12Ω, R3=8Ω, R4=14Ω, R5=4Ω, ET=240V. (Ladder)',answer:'13.51 A',note:''},
+{n:25,type:'mc',text:'When magnetic domains are ? the material will have magnetic characteristics, when ? it will not.',answer:'a. aligned / not aligned',note:''},
+{n:26,type:'mc',text:'A ? material type is easily magnetized and attracted by magnets.',answer:'b. ferromagnetic',note:''},
+{n:27,type:'calc',text:'Determine the circuit resistance if 180W are consumed and current is 3.2A.',answer:'17.58 Ω',note:'R=P/I²=180/10.24'},
+{n:28,type:'calc',text:'Determine the total resistance. Given: R1=100Ω, R2=150Ω, R3=200Ω. (Parallel)',answer:'46.15 Ω',note:'1/RT=1/100+1/150+1/200'},
+{n:29,type:'calc',text:'Determine the total power dissipated. Given: R1=54Ω, R2=36Ω, R3=72Ω, R4=108Ω, I2=0.6A. (Combination)',answer:'89.1 W',note:'V_par=0.6×36=21.6V, find IT, then PT=ET×IT'},
+{n:30,type:'mc',text:'The equation 0=ΣEsource − ΣE_IR shows the relationship expressed in ?',answer:"b. Kirchhoff's Voltage Law",note:''},
+{n:31,type:'calc',text:'If a circuit dissipates 96W and has 24V applied, what is the current flow?',answer:'4 A',note:'I=P/E=96/24'},
+{n:32,type:'calc',text:'Determine the voltage across R2. Given: R1=50Ω, R2=75Ω, I1=2.4A. (Parallel)',answer:'120 V',note:'In parallel, V=I1×R1=2.4×50=120V (same across R2)'},
+{n:33,type:'mc',text:'A simple DC generator is comprised of ?',answer:'a. I, II, III, IV, and V (north pole, brushes, south pole, armature, commutator segments)',note:'Slip rings are for AC generators, not DC'},
+{n:34,type:'calc',text:'Determine the voltage across R4. Given: R1=4.7kΩ, R2=7.2kΩ, R3=6.5kΩ, R4=8.6kΩ, IT=3.1mA. (Series)',answer:'26.66 V',note:'KEY ERROR — key says 4.99V. V_R4=0.0031×8600=26.66V',wrong:true},
+{n:35,type:'mc',text:'If the voltage applied to a circuit is increased, the ?',answer:'a. current will increase',note:'I=E/R — voltage up, current up'},
+{n:36,type:'calc',text:'What is the applied voltage with 500W power consumption and 4A current?',answer:'125 V',note:'V=P/I=500/4'},
+{n:37,type:'calc',text:'Resistance of copper conductor: 26,240 CM area, 5,280 ft length, 68°F (K=10.4).',answer:'2.09 Ω',note:'R=(K×L)/CM=(10.4×5280)/26240'},
+{n:38,type:'mc',text:'Mechanical energy is delivered from a ?, such as water, wind, fossil fuels, or other power sources.',answer:'c. prime mover',note:''},
+{n:39,type:'calc',text:'Determine total resistance. Given: R1=120Ω, R2=40Ω, R3=90Ω, R4=15Ω. (Combination)',answer:'42.86 Ω',note:'R1‖R2=30Ω, R3‖R4=12.86Ω, RT=30+12.86'},
+{n:40,type:'calc',text:'Equivalent resistance. Given: R1=15Ω, R2=20Ω, R3=25Ω, R4=30Ω, R5=35Ω, R6=40Ω. (Ladder)',answer:'46.5 Ω',note:''},
+{n:41,type:'calc',text:'Determine total resistance. Given: R1=50Ω, R2=25Ω, R3=9.5Ω, R4=19Ω. (Combination)',answer:'23 Ω',note:'R1‖R2=16.67Ω, R3‖R4=6.33Ω, RT=16.67+6.33'},
+{n:42,type:'calc',text:'Current flow with 480V applied and 10Ω resistance.',answer:'48 A',note:'I=E/R=480/10'},
+{n:43,type:'calc',text:'Determine total power. Given: P1=4.5kW, P2=12kW, P3=3.6kW, ET=240V. (Parallel)',answer:'20.1 kW',note:'Power adds: 4.5+12+3.6'},
+{n:44,type:'calc',text:'Circuit has 480V applied and 640W power consumption. What is resistance?',answer:'360 Ω',note:'R=E²/P=480²/640'},
+{n:45,type:'mc',text:'This symbol (+ and − with parallel lines) represents a(n) ?',answer:'b. battery',note:''},
+{n:46,type:'calc',text:'Applied voltage with 96Ω resistance and 3A current?',answer:'288 V',note:'V=IR=96×3'},
+{n:47,type:'calc',text:'Power dissipated by R5. Given: R1=1.5kΩ, R2=500Ω, R3=1.2kΩ, R4=380Ω, R5=470Ω, R6=960Ω, E2=1.2V. (Ladder)',answer:'2.39 mW',note:''},
+{n:48,type:'calc',text:'Voltage dropped across R5. Given: R1=10Ω, R2=15Ω, R3=15Ω, R4=30Ω, R5=5Ω, ET=380V. (Ladder)',answer:'72.38 V',note:''},
+{n:49,type:'calc',text:'Resistance of a circuit consuming 2,000W with 120V applied.',answer:'7.2 Ω',note:'R=E²/P=120²/2000'},
+{n:50,type:'calc',text:'Determine current through R3. Given: R1=54Ω, R2=86Ω, R3=112Ω, R4=74Ω, ET=120V. (Combination)',answer:'0.49 A',note:'R3‖(R1+R2)=112‖140=62.22Ω, RT=62.22+74'},
+{n:51,type:'calc',text:'Determine voltage across R3. Given: PT=361W, RT=36Ω, R1=9Ω, R2=4Ω, R4=8Ω. (Series)',answer:'47.5 V',note:'KEY ERROR — key says 25.33V (that is voltage across R4). R3=36−9−4−8=15Ω, I=√(361/36)=3.167A, V_R3=3.167×15=47.5V',wrong:true},
+{n:52,type:'calc',text:'Determine voltage across R2. Given: R1=470Ω, R2=680Ω, I1=3mA. (Parallel)',answer:'1.41 V',note:'V=I1×R1=0.003×470=1.41V (same across R2 in parallel)'},
+{n:53,type:'calc',text:'Determine source voltage if each resistor is 100Ω and total current is 6A. (Parallel, R1‖R2)',answer:'300 V',note:'RT=50Ω, V=6×50'},
+{n:54,type:'calc',text:'How much current flows with 380V applied and 24Ω resistance?',answer:'15.83 A',note:'I=380/24'},
+{n:55,type:'calc',text:'Voltage dropped across R6. Given: R1=2Ω, R2=5Ω, R3=6Ω, R4=4Ω, R5=8Ω, R6=10Ω, I3=3A. (Ladder)',answer:'15 V',note:'I3=3A through R3+R2 branch (11Ω), V=33V across parallel section. Bottom branch I=33/22=1.5A, V_R6=1.5×10'},
+{n:56,type:'calc',text:"Using Kirchhoff's Current Law, solve for I_R1. Given: IT=16A, I_R2=5A. (Parallel)",answer:'11 A',note:'KCL: I_R1=IT−I_R2=16−5'},
+{n:57,type:'calc',text:'Determine current through R4. Given: I1=16A, I2=30A, I3=24A, IT=84A, ET=480V. (Parallel)',answer:'14 A',note:'I4=84−16−30−24=14A'},
+{n:58,type:'calc',text:'What is R4 if total resistance is 96Ω? Given: R1=12Ω, R2=24Ω, R3=20Ω, ET=24V. (Series)',answer:'40 Ω',note:'R4=96−12−24−20=40Ω'},
+{n:59,type:'calc',text:'Current through I3. Given: ET=380V, R1=8Ω, R2=12Ω, R3=16Ω, R4=10Ω. (Series)',answer:'8.26 A',note:'RT=8+12+16+10=46Ω, I=380/46'},
+{n:60,type:'calc',text:'Determine total resistance. Given: R1=25Ω, R2=50Ω, R3=75Ω, R4=150Ω. (Parallel)',answer:'12.5 Ω',note:'1/RT=1/25+1/50+1/75+1/150'}
+];
+
+let activeFilter='all';
+
+function setFilter(f,el){
+  activeFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function render(){
+  const search=document.getElementById('search').value.toLowerCase();
+  const list=document.getElementById('qlist');
+  const filtered=questions.filter(q=>{
+    if(activeFilter==='calc'&&q.type!=='calc')return false;
+    if(activeFilter==='mc'&&q.type!=='mc')return false;
+    if(activeFilter==='wrong'&&!q.wrong)return false;
+    if(search&&!q.text.toLowerCase().includes(search)&&!q.answer.toLowerCase().includes(search)&&!String(q.n).includes(search))return false;
+    return true;
+  });
+  document.getElementById('showing-count').textContent=filtered.length;
+  if(filtered.length===0){list.innerHTML='<div class="empty">No questions match.</div>';return;}
+  list.innerHTML=filtered.map(q=>`
+    <div class="q-card${q.wrong?' wrong':''}">
+      <div class="q-header">
+        <span class="q-num">Q${q.n}</span>
+        <span class="q-text">${q.text}${q.wrong?'<span class="badge badge-wrong">key error</span>':''}</span>
+      </div>
+      <div class="q-answer">
+        <span class="ans-label">Answer:</span>
+        <div>
+          <span class="ans-value">${q.answer}</span>
+          ${q.note?`<div><span class="badge badge-note">${q.note}</span></div>`:''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+render();
+</script>
+</body>
+</html>
